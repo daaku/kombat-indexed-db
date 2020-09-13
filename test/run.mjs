@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import puppeteer from 'puppeteer-core';
 import path from 'path';
+import fs from 'fs';
 
 function onConsole(msg) {
   const type = msg.type();
@@ -13,14 +14,25 @@ function terminate(browser, status = 0) {
   process.exit(status);
 }
 
+function browserPath() {
+  const choices = ['/usr/bin/chromium', '/usr/bin/chrome'];
+  for (const choice of choices) {
+    if (fs.existsSync(choice)) {
+      return choice;
+    }
+  }
+  throw new Error('no chrome or chromium binary found');
+}
+
 async function main() {
   const start = Date.now();
   const timeout = 5000;
   const uri = `file://${path.resolve('test/index.html')}`;
 
+  const binary = browserPath();
   const browser = await puppeteer.launch({
     args: ['--allow-file-access-from-files'],
-    executablePath: '/usr/bin/chromium',
+    executablePath: binary,
   });
 
   const page = await browser.newPage();
@@ -33,7 +45,7 @@ async function main() {
   }, timeout);
 
   let resolveRunEnd;
-  const runEnd = new Promise(async (resolve, _reject) => {
+  const runEnd = new Promise(async (resolve, reject) => {
     resolveRunEnd = resolve;
   });
   await page.exposeFunction('HARNESS_RUN_END', (data) => resolveRunEnd(data));
@@ -56,4 +68,6 @@ async function main() {
   terminate(browser, success ? 0 : 1);
 }
 
-main();
+main().catch((err) => {
+  throw err;
+});
