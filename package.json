@@ -1,9 +1,9 @@
 {
   "name": "@daaku/kombat-indexed-db",
   "author": "Naitik Shah <n@daaku.org>",
-  "version": "0.1.0",
-  "description": "Kombat Local storage implemented on top of IndexedDB.",
-  "repository": "git@github.com:daaku/kombat-local-indexed-db",
+  "version": "0.1.2",
+  "description": "Kombat storage implemented using IndexedDB.",
+  "repository": "git@github.com:daaku/kombat-indexed-db",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "prettier": "prettier-config-daaku",
@@ -15,7 +15,7 @@
     "build:test": "esbuild --bundle --sourcemap --define:process.env.NODE_ENV=\\\"production\\\" --outdir=dist/bundle test/tests.ts",
     "test": "npm run build:test && node test/run.mjs",
     "build": "run-p check:lint test build:js",
-    "publish": "npm run build && npm publish --access=public"
+    "deploy": "npm run build && npm publish --access=public"
   },
   "keywords": [
     "kombat",
