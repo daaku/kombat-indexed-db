@@ -5,6 +5,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+    - run: hash
     - uses: actions/setup-node@v2-beta
       with:
         node-version: '14'
