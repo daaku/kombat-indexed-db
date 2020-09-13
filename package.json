@@ -1,0 +1,41 @@
+{
+  "name": "@daaku/kombat-indexed-db",
+  "author": "Naitik Shah <n@daaku.org>",
+  "version": "0.1.0",
+  "description": "Kombat Local storage implemented on top of IndexedDB.",
+  "repository": "git@github.com:daaku/kombat-local-indexed-db",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "prettier": "prettier-config-daaku",
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "check:lint": "eslint --fix --ignore-pattern dist .",
+    "check": "run-p 'check:*' 'test'",
+    "build:js": "tsc",
+    "build:test": "esbuild --bundle --sourcemap --define:process.env.NODE_ENV=\\\"production\\\" --outdir=dist/bundle test/tests.ts",
+    "test": "npm run build:test && node test/run.mjs",
+    "build": "run-p check:lint test build:js"
+  },
+  "keywords": [
+    "kombat",
+    "crdt",
+    "indexeddb"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/puppeteer-core": "^2.0.0",
+    "@types/qunit": "^2.9.1",
+    "esbuild": "^0.6.32",
+    "eslint": "^7.9.0",
+    "eslint-config-daaku": "^2.0.0",
+    "nanoid": "^3.1.12",
+    "npm-run-all": "^4.1.5",
+    "puppeteer-core": "^5.2.1",
+    "qunit": "^2.11.1",
+    "typescript": "^4.0.2"
+  },
+  "dependencies": {
+    "idb": "^5.0.4",
+    "@daaku/kombat": "^0.1.0"
+  }
+}
