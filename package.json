@@ -14,7 +14,8 @@
     "build:js": "tsc",
     "build:test": "esbuild --bundle --sourcemap --define:process.env.NODE_ENV=\\\"production\\\" --outdir=dist/bundle test/tests.ts",
     "test": "npm run build:test && node test/run.mjs",
-    "build": "run-p check:lint test build:js"
+    "build": "run-p check:lint test build:js",
+    "publish": "npm run build && npm publish --access=public"
   },
   "keywords": [
     "kombat",
