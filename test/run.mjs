@@ -68,6 +68,4 @@ async function main() {
   terminate(browser, success ? 0 : 1);
 }
 
-main().catch((err) => {
-  throw err;
-});
+await main();
