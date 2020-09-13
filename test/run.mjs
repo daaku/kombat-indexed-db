@@ -15,7 +15,7 @@ function terminate(browser, status = 0) {
 }
 
 function browserPath() {
-  const choices = ['/usr/bin/chromium', '/usr/bin/chrome'];
+  const choices = ['/usr/bin/chromium', '/usr/bin/google-chrome'];
   for (const choice of choices) {
     if (fs.existsSync(choice)) {
       return choice;
