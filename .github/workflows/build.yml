@@ -1,0 +1,14 @@
+name: Build
+on: [push]
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - run: sudo apt-get install xvfb
+    - uses: actions/setup-node@v2-beta
+      with:
+        node-version: '14'
+    - uses: actions/checkout@v2.1.1
+    - run: npm install
+    - run: npm run check
