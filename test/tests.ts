@@ -66,12 +66,13 @@ async function createDB(
   return [l, db, cleanUp];
 }
 
-QUnit.test('Store/Query Last Sync', async (assert) => {
+QUnit.test('Set/Get ', async (assert) => {
   const [l, , cleanUp] = await createDB('store_query_last_sync');
-  assert.notOk(await l.queryLastSync(), 'should start off undefined');
+  const key = 'last_sync';
+  assert.notOk(await l.get(key), 'should start off undefined');
   const ts = 'foo-bar-baz';
-  await l.storeLastSync(ts);
-  assert.equal(await l.queryLastSync(), ts, 'should now have expected value');
+  await l.set(key, ts);
+  assert.equal(await l.get(key), ts, 'should now have expected value');
   await cleanUp();
 });
 

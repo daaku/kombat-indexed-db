@@ -1,8 +1,6 @@
 import { IDBPDatabase } from 'idb';
 import type { Local, Message } from '@daaku/kombat';
 
-const lastSyncKey = 'last_sync';
-
 function latestMessageKey(msg: Message): string {
   return `${msg.dataset}:${msg.row}:${msg.column}`;
 }
@@ -26,12 +24,14 @@ export class LocalIndexedDB implements Local {
 
   // This method should be called in your upgrade callback.
   public upgradeDB(db: IDBPDatabase): void {
-    if (db.objectStoreNames.contains(this.messageLogStoreName)) {
-      return;
+    if (!db.objectStoreNames.contains(this.messageLogStoreName)) {
+      db.createObjectStore(this.messageLogStoreName, { keyPath: 'timestamp' });
     }
-    db.createObjectStore(this.messageLogStoreName, { keyPath: 'timestamp' });
-    db.createObjectStore(this.latestMessageStoreName);
-    db.createObjectStore(this.messageMetaStoreName);
+    [this.latestMessageStoreName, this.messageMetaStoreName].forEach((name) => {
+      if (!db.objectStoreNames.contains(name)) {
+        db.createObjectStore(name);
+      }
+    });
   }
 
   // This should be called with the initialized DB before you begin using the
@@ -132,11 +132,11 @@ export class LocalIndexedDB implements Local {
     return results;
   }
 
-  public async storeLastSync(timestamp: string): Promise<void> {
-    await this.db.put(this.messageMetaStoreName, timestamp, lastSyncKey);
+  public async set(key: string, value: string): Promise<void> {
+    await this.db.put(this.messageMetaStoreName, value, key);
   }
 
-  public async queryLastSync(): Promise<string | undefined> {
-    return await this.db.get(this.messageMetaStoreName, lastSyncKey);
+  public async get(key: string): Promise<string | undefined> {
+    return await this.db.get(this.messageMetaStoreName, key);
   }
 }
