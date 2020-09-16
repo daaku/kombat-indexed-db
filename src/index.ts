@@ -5,11 +5,21 @@ function latestMessageKey(msg: Message): string {
   return `${msg.dataset}:${msg.row}:${msg.column}`;
 }
 
+// Changes are keyed by dataset, then row ID, then column mapped to value.
+export interface Changes {
+  [key: string]: {
+    [key: string]: {
+      [key: string]: unknown;
+    };
+  };
+}
+
 export class LocalIndexedDB implements Local {
   private db!: IDBPDatabase;
   private readonly messageLogStoreName: string;
   private readonly latestMessageStoreName: string;
   private readonly messageMetaStoreName: string;
+  private changeListeners: { (changes: Changes): void }[] = [];
 
   // Construct a LocalIndexedDB instance.
   constructor(internalPrefix = '', private datasetPrefix = '') {
@@ -20,6 +30,14 @@ export class LocalIndexedDB implements Local {
 
   private datasetStoreName(name: string): string {
     return `${this.datasetPrefix}${name}`;
+  }
+
+  // Add a listener for changes. Returned function can be called to unsubscribe.
+  public listenChanges(cb: (changes: Changes) => void): () => void {
+    this.changeListeners.push(cb);
+    return () => {
+      this.changeListeners = this.changeListeners.filter((e) => e != cb);
+    };
   }
 
   // This method should be called in your upgrade callback.
@@ -45,9 +63,7 @@ export class LocalIndexedDB implements Local {
     // consolidating by row id is important because if we have multiple changes
     // to the same row we will not read changes made within the transaction,
     // there by causing only the last write to survive.
-    const changes: {
-      [key: string]: { [key: string]: { [key: string]: unknown } };
-    } = {};
+    const changes: Changes = {};
     messages.map((msg) => {
       const datasetName = this.datasetStoreName(msg.dataset);
       let dataset = changes[datasetName];
@@ -77,6 +93,7 @@ export class LocalIndexedDB implements Local {
       }),
     );
     await t.done;
+    this.changeListeners.forEach((c) => c(changes));
   }
 
   public async storeMessages(messages: Message[]): Promise<boolean[]> {
