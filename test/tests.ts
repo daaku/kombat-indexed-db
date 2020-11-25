@@ -1,7 +1,8 @@
-import { LocalIndexedDB } from '../src';
-import { Timestamp, Message } from '@daaku/kombat';
-import { openDB, deleteDB, IDBPDatabase } from 'idb';
+import { Message, Timestamp } from '@daaku/kombat';
+import { deleteDB, IDBPDatabase, openDB } from 'idb';
 import { customAlphabet } from 'nanoid';
+
+import { LocalIndexedDB } from '../src';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
 const nodeID = 'e35dd11177e4cc2c';

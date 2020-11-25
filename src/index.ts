@@ -1,5 +1,5 @@
-import { IDBPDatabase } from 'idb';
 import type { Local, Message } from '@daaku/kombat';
+import { IDBPDatabase } from 'idb';
 
 function latestMessageKey(msg: Message): string {
   return `${msg.dataset}:${msg.row}:${msg.column}`;
