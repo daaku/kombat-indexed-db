@@ -5,9 +5,12 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-node@v2-beta
+    - name: Setup Node
+      uses: actions/setup-node@v2.1.5
       with:
-        node-version: '14'
-    - uses: actions/checkout@v2.1.1
-    - run: npm install
-    - run: npm run check
+        node-version: '16'
+    - uses: actions/checkout@v2.3.4
+    - name: Dependencies
+      run: npm install
+    - name: Check
+      run: npm run check
