@@ -24,18 +24,18 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@daaku/eslint-config": "^3.6.0",
-    "@daaku/qunit-puppeteer": "^0.3.0",
+    "@daaku/eslint-config": "^3.9.0",
+    "@daaku/qunit-puppeteer": "^1.0.0",
     "@types/qunit": "^2.11.1",
-    "esbuild": "^0.12.0",
-    "eslint": "^7.21.0",
-    "nanoid": "^3.1.20",
+    "esbuild": "^0.12.4",
+    "eslint": "^7.27.0",
+    "nanoid": "^3.1.23",
     "npm-run-all": "^4.1.5",
-    "qunit": "^2.14.0",
-    "typescript": "^4.2.3"
+    "qunit": "^2.15.0",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
-    "@daaku/kombat": "^0.2.1",
-    "idb": "^6.0.0"
+    "@daaku/kombat": "^1.0.0",
+    "idb": "^6.1.2"
   }
 }
