@@ -45,15 +45,21 @@ function makeName(prefix: string): string {
   return `${prefix}_${nanoid()}`;
 }
 
-async function createDB(
-  prefix: string,
-): Promise<[LocalIndexedDB, IDBPDatabase, () => void]> {
+interface Created {
+  l: LocalIndexedDB;
+  datasetPrefix: string;
+  db: IDBPDatabase;
+  cleanUp(): void;
+}
+
+async function createDB(prefix: string): Promise<Created> {
   const name = makeName(prefix);
-  const l = new LocalIndexedDB();
+  const datasetPrefix = `${nanoid()}_`;
+  const l = new LocalIndexedDB('', datasetPrefix);
   const db = await openDB(name, 1, {
     upgrade: (db) => {
-      db.createObjectStore('people', { keyPath: 'id' });
-      db.createObjectStore('spaceship', { keyPath: 'id' });
+      db.createObjectStore(`${datasetPrefix}people`, { keyPath: 'id' });
+      db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' });
       l.upgradeDB(db);
     },
   });
@@ -64,11 +70,11 @@ async function createDB(
     await deleteDB(name);
   };
 
-  return [l, db, cleanUp];
+  return { l, datasetPrefix, db, cleanUp };
 }
 
 QUnit.test('Set/Get ', async (assert) => {
-  const [l, , cleanUp] = await createDB('store_query_last_sync');
+  const { l, cleanUp } = await createDB('store_query_last_sync');
   const key = 'last_sync';
   assert.notOk(await l.get(key), 'should start off undefined');
   const ts = 'foo-bar-baz';
@@ -78,7 +84,7 @@ QUnit.test('Set/Get ', async (assert) => {
 });
 
 QUnit.test('Store/Query Messages', async (assert) => {
-  const [l, , cleanUp] = await createDB('store_query_messages');
+  const { l, cleanUp } = await createDB('store_query_messages');
   const results1 = await l.storeMessages([yodaNameMessage, yodaAge900Message]);
   assert.deepEqual(results1, [true, true], 'both messages should be inserted');
   const results2 = await l.storeMessages([yodaNameMessage, yodaAge900Message]);
@@ -93,7 +99,7 @@ QUnit.test('Store/Query Messages', async (assert) => {
 });
 
 QUnit.test('Store/Query Latest', async (assert) => {
-  const [l, , cleanUp] = await createDB('store_query_latest');
+  const { l, cleanUp } = await createDB('store_query_latest');
   const originalIn = [yodaNameMessage, yodaAge900Message];
   await l.storeMessages(originalIn);
   assert.deepEqual(
@@ -111,10 +117,10 @@ QUnit.test('Store/Query Latest', async (assert) => {
 });
 
 QUnit.test('Apply Messages', async (assert) => {
-  const [l, db, cleanUp] = await createDB('apply_messages');
+  const { l, db, datasetPrefix, cleanUp } = await createDB('apply_messages');
   await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge950Message]);
   assert.deepEqual(
-    await db.get('spaceship', falconID),
+    await db.get(`${datasetPrefix}spaceship`, falconID),
     {
       id: falconID,
       name: 'Falcon',
@@ -122,7 +128,7 @@ QUnit.test('Apply Messages', async (assert) => {
     'expect falcon',
   );
   assert.deepEqual(
-    await db.get('people', yodaID),
+    await db.get(`${datasetPrefix}people`, yodaID),
     {
       id: yodaID,
       name: 'Yoda',
