@@ -9,7 +9,7 @@ jobs:
       uses: actions/setup-node@v2.4.1
       with:
         node-version: '16'
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v2.3.5
     - name: Dependencies
       run: npm install
     - name: Check
