@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "@daaku/kombat": "^1.1.0",
-    "idb": "^6.1.5"
+    "idb": "^7.0.0"
   }
 }
