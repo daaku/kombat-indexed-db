@@ -27,7 +27,7 @@
     "@daaku/eslint-config": "^4.0.0",
     "@daaku/qunit-puppeteer": "^1.2.0",
     "@types/qunit": "^2.11.2",
-    "esbuild": "^0.13.8",
+    "esbuild": "^0.14.0",
     "eslint": "^8.1.0",
     "nanoid": "^3.1.30",
     "npm-run-all": "^4.1.5",
