@@ -1,7 +1,7 @@
 {
   "name": "@daaku/kombat-indexed-db",
   "author": "Naitik Shah <n@daaku.org>",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Kombat storage implemented using IndexedDB.",
   "repository": "git@github.com:daaku/kombat-indexed-db",
   "main": "dist/src/index.js",
