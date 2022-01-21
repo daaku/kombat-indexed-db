@@ -65,10 +65,9 @@ export class LocalIndexedDB implements Local {
     // there by causing only the last write to survive.
     const changes: Changes = {};
     messages.map((msg) => {
-      const datasetName = this.datasetStoreName(msg.dataset);
-      let dataset = changes[datasetName];
+      let dataset = changes[msg.dataset];
       if (!dataset) {
-        dataset = changes[datasetName] = {};
+        dataset = changes[msg.dataset] = {};
       }
       let row = dataset[msg.row];
       if (!row) {
@@ -77,10 +76,13 @@ export class LocalIndexedDB implements Local {
       row[msg.column] = msg.value;
     });
 
-    const t = this.db.transaction(Object.keys(changes), 'readwrite');
+    const storeNames = Object.keys(changes).map((n) =>
+      this.datasetStoreName(n),
+    );
+    const t = this.db.transaction(storeNames, 'readwrite');
     await Promise.all(
       Object.keys(changes).map(async (dataset) => {
-        const store = t.objectStore(dataset);
+        const store = t.objectStore(this.datasetStoreName(dataset));
         await Object.keys(changes[dataset]).map(async (id) => {
           let row = await store.get(id);
           if (!row) {

@@ -2,7 +2,7 @@ import { Message, Timestamp } from '@daaku/kombat';
 import { deleteDB, IDBPDatabase, openDB } from 'idb';
 import { customAlphabet } from 'nanoid';
 
-import { LocalIndexedDB } from '../src';
+import { Changes, LocalIndexedDB } from '../src';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
 const nodeID = 'e35dd11177e4cc2c';
@@ -135,6 +135,42 @@ QUnit.test('Apply Messages', async (assert) => {
       age: 950,
     },
     'expect yoda',
+  );
+  await cleanUp();
+});
+
+QUnit.test('Changes', async (assert) => {
+  const { l, cleanUp } = await createDB('store_query_latest');
+  const changes: Changes[] = [];
+  const unsubscribe = l.listenChanges((c) => changes.push(c));
+  await l.applyChanges([falconNameMessage, yodaAge900Message]);
+  await l.applyChanges([yodaAge950Message]);
+  unsubscribe();
+  await l.applyChanges([yodaNameMessage]);
+  assert.deepEqual(
+    changes,
+    [
+      {
+        [falconNameMessage.dataset]: {
+          [falconNameMessage.row]: {
+            [falconNameMessage.column]: falconNameMessage.value,
+          },
+        },
+        [yodaAge900Message.dataset]: {
+          [yodaAge900Message.row]: {
+            [yodaAge900Message.column]: yodaAge900Message.value,
+          },
+        },
+      },
+      {
+        [yodaAge950Message.dataset]: {
+          [yodaAge950Message.row]: {
+            [yodaAge950Message.column]: yodaAge950Message.value,
+          },
+        },
+      },
+    ],
+    'expect some changes',
   );
   await cleanUp();
 });
