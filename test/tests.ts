@@ -4,6 +4,7 @@ import { customAlphabet } from 'nanoid';
 
 import {
   Changes,
+  loadDatasetMem,
   LocalIndexedDB,
   syncDatasetIndexedDB,
   syncDatasetMem,
@@ -130,7 +131,7 @@ QUnit.test('Sync Dataset IndexedDB', async (assert) => {
     db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' });
   };
 
-  const { l, db, cleanUp } = await createDB('apply_messages', upgradeDB);
+  const { l, db, cleanUp } = await createDB('sync_dataset', upgradeDB);
   l.listenChanges(syncDatasetIndexedDB(db, datasetPrefix));
 
   await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge950Message]);
@@ -155,7 +156,7 @@ QUnit.test('Sync Dataset IndexedDB', async (assert) => {
 });
 
 QUnit.test('Sync Dataset Mem', async (assert) => {
-  const { l, cleanUp } = await createDB('apply_messages');
+  const { l, cleanUp } = await createDB('sync_mem');
   const mem = {};
   l.listenChanges(syncDatasetMem(mem));
 
@@ -194,6 +195,39 @@ QUnit.test('Sync Dataset Mem', async (assert) => {
           id: yodaNameMessage.row,
           [yodaNameMessage.column]: yodaNameMessage.value,
           [yodaAge950Message.column]: yodaAge950Message.value,
+        },
+      },
+    },
+    'expect mem db',
+  );
+  await cleanUp();
+});
+
+QUnit.test('Load Dataset Mem', async (assert) => {
+  const { l, db, cleanUp } = await createDB('load_mem');
+  await l.storeMessages([
+    falconNameMessage,
+    yodaNameMessage,
+    yodaAge900Message,
+  ]);
+
+  const mem = {};
+  await loadDatasetMem(mem, db);
+
+  assert.deepEqual(
+    mem,
+    {
+      [falconNameMessage.dataset]: {
+        [falconNameMessage.row]: {
+          id: falconNameMessage.row,
+          [falconNameMessage.column]: falconNameMessage.value,
+        },
+      },
+      [yodaNameMessage.dataset]: {
+        [yodaNameMessage.row]: {
+          id: yodaNameMessage.row,
+          [yodaNameMessage.column]: yodaNameMessage.value,
+          [yodaAge900Message.column]: yodaAge900Message.value,
         },
       },
     },
