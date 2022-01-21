@@ -43,43 +43,45 @@ export function syncDatasetIndexedDB(
 }
 
 export class LocalIndexedDB implements Local {
-  private db!: IDBPDatabase;
-  private readonly messageLogStoreName: string;
-  private readonly latestMessageStoreName: string;
-  private readonly messageMetaStoreName: string;
-  private changeListeners: ChangeListener[] = [];
+  #db!: IDBPDatabase;
+  readonly #messageLogStoreName: string;
+  readonly #latestMessageStoreName: string;
+  readonly #messageMetaStoreName: string;
+  #changeListeners: ChangeListener[] = [];
 
   // Construct a LocalIndexedDB instance.
   constructor(internalPrefix = '') {
-    this.messageLogStoreName = `${internalPrefix}message_log`;
-    this.latestMessageStoreName = `${internalPrefix}message_latest`;
-    this.messageMetaStoreName = `${internalPrefix}message_meta`;
+    this.#messageLogStoreName = `${internalPrefix}message_log`;
+    this.#latestMessageStoreName = `${internalPrefix}message_latest`;
+    this.#messageMetaStoreName = `${internalPrefix}message_meta`;
   }
 
   // Add a listener for changes. Returned function can be called to unsubscribe.
   public listenChanges(cb: ChangeListener): () => void {
-    this.changeListeners.push(cb);
+    this.#changeListeners.push(cb);
     return () => {
-      this.changeListeners = this.changeListeners.filter((e) => e != cb);
+      this.#changeListeners = this.#changeListeners.filter((e) => e != cb);
     };
   }
 
   // This method should be called in your upgrade callback.
   public upgradeDB(db: IDBPDatabase): void {
-    if (!db.objectStoreNames.contains(this.messageLogStoreName)) {
-      db.createObjectStore(this.messageLogStoreName, { keyPath: 'timestamp' });
+    if (!db.objectStoreNames.contains(this.#messageLogStoreName)) {
+      db.createObjectStore(this.#messageLogStoreName, { keyPath: 'timestamp' });
     }
-    [this.latestMessageStoreName, this.messageMetaStoreName].forEach((name) => {
-      if (!db.objectStoreNames.contains(name)) {
-        db.createObjectStore(name);
-      }
-    });
+    [this.#latestMessageStoreName, this.#messageMetaStoreName].forEach(
+      (name) => {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name);
+        }
+      },
+    );
   }
 
   // This should be called with the initialized DB before you begin using the
   // instance.
   public setDB(db: IDBPDatabase): void {
-    this.db = db;
+    this.#db = db;
   }
 
   public async applyChanges(messages: Message[]): Promise<void> {
@@ -99,16 +101,16 @@ export class LocalIndexedDB implements Local {
       }
       row[msg.column] = msg.value;
     });
-    this.changeListeners.forEach((c) => c(changes));
+    this.#changeListeners.forEach((c) => c(changes));
   }
 
   public async storeMessages(messages: Message[]): Promise<boolean[]> {
-    const t = this.db.transaction(
-      [this.messageLogStoreName, this.latestMessageStoreName],
+    const t = this.#db.transaction(
+      [this.#messageLogStoreName, this.#latestMessageStoreName],
       'readwrite',
     );
-    const messageLogStore = t.objectStore(this.messageLogStoreName);
-    const latestMessageStore = t.objectStore(this.latestMessageStoreName);
+    const messageLogStore = t.objectStore(this.#messageLogStoreName);
+    const latestMessageStore = t.objectStore(this.#latestMessageStoreName);
     const results = await Promise.all(
       messages.map(async (msg) => {
         const row = await messageLogStore.get(msg.timestamp);
@@ -130,7 +132,7 @@ export class LocalIndexedDB implements Local {
   }
 
   public async queryMessages(since: string): Promise<Message[]> {
-    const t = this.db.transaction(this.messageLogStoreName);
+    const t = this.#db.transaction(this.#messageLogStoreName);
     const results: Message[] = [];
     let cursor = await t.store.openCursor(
       IDBKeyRange.lowerBound(since),
@@ -147,7 +149,7 @@ export class LocalIndexedDB implements Local {
   public async queryLatestMessages(
     messages: Message[],
   ): Promise<(Message | undefined)[]> {
-    const t = this.db.transaction(this.latestMessageStoreName);
+    const t = this.#db.transaction(this.#latestMessageStoreName);
     const results = await Promise.all(
       messages.map((msg) => t.store.get(latestMessageKey(msg))),
     );
@@ -156,10 +158,10 @@ export class LocalIndexedDB implements Local {
   }
 
   public async set(key: string, value: string): Promise<void> {
-    await this.db.put(this.messageMetaStoreName, value, key);
+    await this.#db.put(this.#messageMetaStoreName, value, key);
   }
 
   public async get(key: string): Promise<string | undefined> {
-    return await this.db.get(this.messageMetaStoreName, key);
+    return await this.#db.get(this.#messageMetaStoreName, key);
   }
 }
