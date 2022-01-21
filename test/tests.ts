@@ -2,7 +2,12 @@ import { Message, Timestamp } from '@daaku/kombat';
 import { deleteDB, IDBPDatabase, openDB } from 'idb';
 import { customAlphabet } from 'nanoid';
 
-import { Changes, LocalIndexedDB, syncDatasetIndexedDB } from '../src';
+import {
+  Changes,
+  LocalIndexedDB,
+  syncDatasetIndexedDB,
+  syncDatasetMem,
+} from '../src';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
 const nodeID = 'e35dd11177e4cc2c';
@@ -145,6 +150,54 @@ QUnit.test('Sync Dataset IndexedDB', async (assert) => {
       age: 950,
     },
     'expect yoda',
+  );
+  await cleanUp();
+});
+
+QUnit.test('Sync Dataset Mem', async (assert) => {
+  const { l, cleanUp } = await createDB('apply_messages');
+  const mem = {};
+  l.listenChanges(syncDatasetMem(mem));
+
+  await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge900Message]);
+  assert.deepEqual(
+    mem,
+    {
+      [falconNameMessage.dataset]: {
+        [falconNameMessage.row]: {
+          id: falconNameMessage.row,
+          [falconNameMessage.column]: falconNameMessage.value,
+        },
+      },
+      [yodaNameMessage.dataset]: {
+        [yodaNameMessage.row]: {
+          id: yodaNameMessage.row,
+          [yodaNameMessage.column]: yodaNameMessage.value,
+          [yodaAge900Message.column]: yodaAge900Message.value,
+        },
+      },
+    },
+    'expect mem db',
+  );
+  await l.applyChanges([yodaAge950Message]);
+  assert.deepEqual(
+    mem,
+    {
+      [falconNameMessage.dataset]: {
+        [falconNameMessage.row]: {
+          id: falconNameMessage.row,
+          [falconNameMessage.column]: falconNameMessage.value,
+        },
+      },
+      [yodaNameMessage.dataset]: {
+        [yodaNameMessage.row]: {
+          id: yodaNameMessage.row,
+          [yodaNameMessage.column]: yodaNameMessage.value,
+          [yodaAge950Message.column]: yodaAge950Message.value,
+        },
+      },
+    },
+    'expect mem db',
   );
   await cleanUp();
 });

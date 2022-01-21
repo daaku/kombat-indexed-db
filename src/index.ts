@@ -42,6 +42,27 @@ export function syncDatasetIndexedDB(
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function syncDatasetMem(mem: any): ChangeListener {
+  return async (changes: Changes) => {
+    Object.keys(changes).map((datasetName) => {
+      let dataset = mem[datasetName];
+      if (!dataset) {
+        mem[datasetName] = dataset = {};
+      }
+      Object.keys(changes[datasetName]).map((id) => {
+        let row = dataset[id];
+        if (!row) {
+          row = { id, ...changes[datasetName][id] };
+        } else {
+          row = { ...row, ...changes[datasetName][id] };
+        }
+        dataset[id] = row;
+      });
+    });
+  };
+}
+
 export class LocalIndexedDB implements Local {
   #db!: IDBPDatabase;
   readonly #messageLogStoreName: string;
