@@ -2,7 +2,7 @@ import { Message, Timestamp } from '@daaku/kombat';
 import { deleteDB, IDBPDatabase, openDB } from 'idb';
 import { customAlphabet } from 'nanoid';
 
-import { Changes, LocalIndexedDB } from '../src';
+import { Changes, LocalIndexedDB, syncDatasetIndexedDB } from '../src';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
 const nodeID = 'e35dd11177e4cc2c';
@@ -47,20 +47,22 @@ function makeName(prefix: string): string {
 
 interface Created {
   l: LocalIndexedDB;
-  datasetPrefix: string;
   db: IDBPDatabase;
   cleanUp(): void;
 }
 
-async function createDB(prefix: string): Promise<Created> {
+async function createDB(
+  prefix: string,
+  upgradeDB?: (db: IDBPDatabase) => void,
+): Promise<Created> {
   const name = makeName(prefix);
-  const datasetPrefix = `${nanoid()}_`;
-  const l = new LocalIndexedDB('', datasetPrefix);
+  const l = new LocalIndexedDB();
   const db = await openDB(name, 1, {
     upgrade: (db) => {
-      db.createObjectStore(`${datasetPrefix}people`, { keyPath: 'id' });
-      db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' });
       l.upgradeDB(db);
+      if (upgradeDB) {
+        upgradeDB(db);
+      }
     },
   });
   l.setDB(db);
@@ -70,7 +72,7 @@ async function createDB(prefix: string): Promise<Created> {
     await deleteDB(name);
   };
 
-  return { l, datasetPrefix, db, cleanUp };
+  return { l, db, cleanUp };
 }
 
 QUnit.test('Set/Get ', async (assert) => {
@@ -116,8 +118,16 @@ QUnit.test('Store/Query Latest', async (assert) => {
   await cleanUp();
 });
 
-QUnit.test('Apply Messages', async (assert) => {
-  const { l, db, datasetPrefix, cleanUp } = await createDB('apply_messages');
+QUnit.test('Sync Dataset IndexedDB', async (assert) => {
+  const datasetPrefix = `${nanoid()}_`;
+  const upgradeDB = (db: IDBPDatabase) => {
+    db.createObjectStore(`${datasetPrefix}people`, { keyPath: 'id' });
+    db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' });
+  };
+
+  const { l, db, cleanUp } = await createDB('apply_messages', upgradeDB);
+  l.listenChanges(syncDatasetIndexedDB(db, datasetPrefix));
+
   await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge950Message]);
   assert.deepEqual(
     await db.get(`${datasetPrefix}spaceship`, falconID),
@@ -142,7 +152,9 @@ QUnit.test('Apply Messages', async (assert) => {
 QUnit.test('Changes', async (assert) => {
   const { l, cleanUp } = await createDB('store_query_latest');
   const changes: Changes[] = [];
-  const unsubscribe = l.listenChanges((c) => changes.push(c));
+  const unsubscribe = l.listenChanges(async (c) => {
+    changes.push(c);
+  });
   await l.applyChanges([falconNameMessage, yodaAge900Message]);
   await l.applyChanges([yodaAge950Message]);
   unsubscribe();

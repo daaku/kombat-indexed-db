@@ -14,26 +14,50 @@ export interface Changes {
   };
 }
 
+export type ChangeListener = { (changes: Changes): void };
+
+export function syncDatasetIndexedDB(
+  db: IDBPDatabase,
+  prefix = '',
+): ChangeListener {
+  const dsName = (name: string) => `${prefix}${name}`;
+  return async (changes: Changes) => {
+    const storeNames = Object.keys(changes).map(dsName);
+    const t = db.transaction(storeNames, 'readwrite');
+    await Promise.all(
+      Object.keys(changes).map(async (dataset) => {
+        const store = t.objectStore(dsName(dataset));
+        await Object.keys(changes[dataset]).map(async (id) => {
+          let row = await store.get(id);
+          if (!row) {
+            row = { id, ...changes[dataset][id] };
+          } else {
+            row = { ...row, ...changes[dataset][id] };
+          }
+          await store.put(row);
+        });
+      }),
+    );
+    await t.done;
+  };
+}
+
 export class LocalIndexedDB implements Local {
   private db!: IDBPDatabase;
   private readonly messageLogStoreName: string;
   private readonly latestMessageStoreName: string;
   private readonly messageMetaStoreName: string;
-  private changeListeners: { (changes: Changes): void }[] = [];
+  private changeListeners: ChangeListener[] = [];
 
   // Construct a LocalIndexedDB instance.
-  constructor(internalPrefix = '', private datasetPrefix = '') {
+  constructor(internalPrefix = '') {
     this.messageLogStoreName = `${internalPrefix}message_log`;
     this.latestMessageStoreName = `${internalPrefix}message_latest`;
     this.messageMetaStoreName = `${internalPrefix}message_meta`;
   }
 
-  private datasetStoreName(name: string): string {
-    return `${this.datasetPrefix}${name}`;
-  }
-
   // Add a listener for changes. Returned function can be called to unsubscribe.
-  public listenChanges(cb: (changes: Changes) => void): () => void {
+  public listenChanges(cb: ChangeListener): () => void {
     this.changeListeners.push(cb);
     return () => {
       this.changeListeners = this.changeListeners.filter((e) => e != cb);
@@ -75,26 +99,6 @@ export class LocalIndexedDB implements Local {
       }
       row[msg.column] = msg.value;
     });
-
-    const storeNames = Object.keys(changes).map((n) =>
-      this.datasetStoreName(n),
-    );
-    const t = this.db.transaction(storeNames, 'readwrite');
-    await Promise.all(
-      Object.keys(changes).map(async (dataset) => {
-        const store = t.objectStore(this.datasetStoreName(dataset));
-        await Object.keys(changes[dataset]).map(async (id) => {
-          let row = await store.get(id);
-          if (!row) {
-            row = { id, ...changes[dataset][id] };
-          } else {
-            row = { ...row, ...changes[dataset][id] };
-          }
-          await store.put(row);
-        });
-      }),
-    );
-    await t.done;
     this.changeListeners.forEach((c) => c(changes));
   }
 
