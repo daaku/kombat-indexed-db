@@ -65,22 +65,19 @@ export function syncDatasetMem(mem: any): ChangeListener {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function loadDatasetMem(mem: any, db: IDBPDatabase, prefix = '') {
-  const t = db.transaction(`${prefix}message_latest`);
-  let cursor = await t.store.openCursor(IDBKeyRange.lowerBound(''), 'next');
-  while (cursor) {
-    const { dataset, row, column, value } = cursor.value;
-    let d = mem[dataset];
-    if (!d) {
-      d = mem[dataset] = {};
-    }
-    let r = d[row];
-    if (!r) {
-      r = d[row] = { id: row };
-    }
-    r[column] = value;
-    cursor = await cursor.continue();
-  }
-  await t.done;
+  (await db.getAll(`${prefix}message_latest`)).forEach(
+    ({ dataset, row, column, value }) => {
+      let d = mem[dataset];
+      if (!d) {
+        d = mem[dataset] = {};
+      }
+      let r = d[row];
+      if (!r) {
+        r = d[row] = { id: row };
+      }
+      r[column] = value;
+    },
+  );
 }
 
 export class LocalIndexedDB implements Local {
