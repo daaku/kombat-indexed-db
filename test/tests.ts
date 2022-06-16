@@ -8,7 +8,7 @@ import {
   LocalIndexedDB,
   syncDatasetIndexedDB,
   syncDatasetMem,
-} from '../src';
+} from '../src/index.js';
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
 const nodeID = 'e35dd11177e4cc2c';

@@ -4,9 +4,18 @@
   "version": "2.1.0",
   "description": "Kombat storage implemented using IndexedDB.",
   "repository": "git@github.com:daaku/kombat-indexed-db",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "license": "MIT",
   "prettier": "prettier-config-daaku",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "dist/src/index.js",
+      "types": "dist/src/index.d.ts"
+    }
+  },
+  "eslintConfig": {
+    "extends": "@daaku"
+  },
   "scripts": {
     "check:types": "tsc --noEmit",
     "check:lint": "eslint --fix --ignore-pattern dist .",
@@ -22,7 +31,6 @@
     "crdt",
     "indexeddb"
   ],
-  "license": "MIT",
   "devDependencies": {
     "@daaku/eslint-config": "^4.2.0",
     "@daaku/qunit-puppeteer": "^2.0.0",
@@ -36,7 +44,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
-    "@daaku/kombat": "^1.2.0",
-    "idb": "^7.0.0"
+    "@daaku/kombat": "^2.0.0",
+    "idb": "^7.0.2"
   }
 }
