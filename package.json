@@ -33,7 +33,7 @@
   ],
   "devDependencies": {
     "@daaku/eslint-config": "^4.2.0",
-    "@daaku/qunit-puppeteer": "^2.0.0",
+    "@daaku/qunit-puppeteer": "^3.0.0",
     "@types/qunit": "^2.11.3",
     "esbuild": "^0.15.1",
     "eslint": "^8.7.0",
