@@ -1,24 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>Test Suite</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E">
-  <link rel="stylesheet" href="../node_modules/qunit/qunit/qunit.css">
-</head>
-
-<body>
-  <div id="qunit"></div>
-  <div id="qunit-fixture"></div>
-  <script src="../node_modules/qunit/qunit/qunit.js"></script>
-  <script>
-    if (window.HARNESS_RUN_END) {
-      QUnit.on('runEnd', window.HARNESS_RUN_END);
-    }
-  </script>
-  <script src="../dist/bundle/tests.js"></script>
-</body>
-
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script type="module" src="/test/tests.ts"></script>
+  </body>
 </html>

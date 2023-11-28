@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "nodenext",
-    "outDir": "dist",
-    "sourceMap": true,
     "declaration": true,
-    "strict": true,
-    "strictBindCallApply": true,
+    "esModuleInterop": true,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "outDir": "dist",
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "sourceMap": true,
+    "strict": true,
+    "strictBindCallApply": true,
+    "target": "es2020"
   }
 }

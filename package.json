@@ -5,7 +5,6 @@
   "description": "Kombat storage implemented using IndexedDB.",
   "repository": "git@github.com:daaku/kombat-indexed-db",
   "license": "MIT",
-  "prettier": "prettier-config-daaku",
   "type": "module",
   "exports": {
     ".": {
@@ -13,18 +12,16 @@
       "types": "./dist/src/index.d.ts"
     }
   },
-  "eslintConfig": {
-    "extends": "@daaku"
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
   },
   "scripts": {
-    "check:types": "tsc --noEmit",
-    "check:lint": "eslint --fix --ignore-pattern dist .",
-    "check": "run-p 'check:*' 'test'",
-    "build:js": "tsc",
-    "build:test": "esbuild --bundle --sourcemap --outdir=dist/bundle test/tests.ts",
-    "test": "npm run build:test && qunit-puppeteer",
-    "build": "run-p check build:js",
-    "deploy": "npm run build && npm publish --access=public"
+    "build": "tsc",
+    "test": "vite build && URI=file://$PWD/dist/test/index.html qunit-puppeteer",
+    "deploy": "npm run test && npm publish --access=public",
+    "prepare": "npm run build",
+    "dev": "vite"
   },
   "keywords": [
     "kombat",
@@ -32,16 +29,12 @@
     "indexeddb"
   ],
   "devDependencies": {
-    "@daaku/eslint-config": "^4.2.0",
     "@daaku/qunit-puppeteer": "^3.0.0",
     "@types/qunit": "^2.11.3",
-    "esbuild": "^0.19.0",
-    "eslint": "^8.7.0",
     "nanoid": "^5.0.1",
-    "npm-run-all": "^4.1.5",
-    "prettier-config-daaku": "^1.0.0",
     "qunit": "^2.17.2",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vite": "^5.0.2"
   },
   "dependencies": {
     "@daaku/kombat": "^2.0.0",

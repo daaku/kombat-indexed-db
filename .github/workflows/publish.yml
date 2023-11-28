@@ -11,22 +11,22 @@ jobs:
     name: Publish
     runs-on: ubuntu-latest
     steps:
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: '16'
-        registry-url: 'https://registry.npmjs.org'
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Dependencies
-      run: npm install
-    - name: Bump Version
-      run: |
-        git config --global user.name 'Naitik Shah'
-        git config --global user.email 'daaku@users.noreply.github.com'
-        npm version ${{ github.event.inputs.version }}
-        git push && git push --tags
-    - name: Publish
-      run: npm run deploy
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: current
+          registry-url: 'https://registry.npmjs.org'
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Dependencies
+        run: npm install
+      - name: Bump Version
+        run: |
+          git config --global user.name 'Naitik Shah'
+          git config --global user.email 'daaku@users.noreply.github.com'
+          npm version ${{ github.event.inputs.version }}
+          git push && git push --tags
+      - name: Publish
+        run: npm run deploy
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
