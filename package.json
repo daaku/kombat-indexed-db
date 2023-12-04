@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "@daaku/kombat": "^2.0.0",
-    "idb": "^7.0.2"
+    "idb": "^8.0.0"
   }
 }
