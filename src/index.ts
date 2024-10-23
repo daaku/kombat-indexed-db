@@ -27,15 +27,17 @@ export function syncDatasetIndexedDB(
     await Promise.all(
       Object.keys(changes).map(async dataset => {
         const store = t.objectStore(dsName(dataset))
-        await Object.keys(changes[dataset]).map(async id => {
-          let row = await store.get(id)
-          if (!row) {
-            row = { id, ...changes[dataset][id] }
-          } else {
-            row = { ...row, ...changes[dataset][id] }
-          }
-          await store.put(row)
-        })
+        await Promise.all(
+          Object.keys(changes[dataset]).map(async id => {
+            let row = await store.get(id)
+            if (!row) {
+              row = { id, ...changes[dataset][id] }
+            } else {
+              row = { ...row, ...changes[dataset][id] }
+            }
+            await store.put(row)
+          }),
+        )
       }),
     )
     await t.done
