@@ -105,8 +105,25 @@ QUnit.test('Store/Query Messages', async assert => {
   const results3 = await l.queryMessages('')
   assert.deepEqual(
     results3,
-    [yodaAge900Message, yodaNameMessage],
+    [yodaNameMessage, yodaAge900Message],
     'expect both messages to be returned',
+  )
+  await cleanUp()
+})
+
+QUnit.test('Store/Query Since', async assert => {
+  const { l, cleanUp } = await createDB('store_query_messages')
+  const results1 = await l.storeMessages([
+    yodaNameMessage,
+    yodaAge900Message,
+    yodaAge950Message,
+  ])
+  assert.deepEqual(results1, [true, true, true], 'should be inserted')
+  const results3 = await l.queryMessages(yodaAge900Message.timestamp)
+  assert.deepEqual(
+    results3,
+    [yodaAge900Message, yodaAge950Message],
+    'expect 2 messages to be returned',
   )
   await cleanUp()
 })
@@ -210,7 +227,8 @@ QUnit.test('Sync Dataset Mem', async assert => {
 
 QUnit.test('Load Dataset Mem', async assert => {
   const { l, db, cleanUp } = await createDB('load_mem')
-  await l.storeMessages([falconNameMessage, yodaNameMessage, yodaAge900Message])
+  await l.storeMessages([falconNameMessage, yodaNameMessage, yodaAge950Message])
+  await l.storeMessages([yodaAge900Message])
 
   const mem = {}
   await loadDatasetMem(mem, db)
@@ -228,7 +246,7 @@ QUnit.test('Load Dataset Mem', async assert => {
         [yodaNameMessage.row]: {
           id: yodaNameMessage.row,
           [yodaNameMessage.column]: yodaNameMessage.value,
-          [yodaAge900Message.column]: yodaAge900Message.value,
+          [yodaAge950Message.column]: yodaAge950Message.value,
         },
       },
     },
@@ -271,6 +289,31 @@ QUnit.test('Changes', async assert => {
       },
     ],
     'expect some changes',
+  )
+  await cleanUp()
+})
+
+QUnit.test('Multiple Changes of Same Column takes Latest', async assert => {
+  const { l, cleanUp } = await createDB('store_query_latest')
+  const changes: Changes[] = []
+  const unsubscribe = l.listenChanges(async c => {
+    changes.push(c)
+  })
+  await l.applyChanges([yodaNameMessage, yodaAge900Message, yodaAge950Message])
+  unsubscribe()
+  assert.deepEqual(
+    changes,
+    [
+      {
+        [yodaNameMessage.dataset]: {
+          [yodaNameMessage.row]: {
+            [yodaNameMessage.column]: yodaNameMessage.value,
+            [yodaAge950Message.column]: yodaAge950Message.value,
+          },
+        },
+      },
+    ],
+    'expect consolidated change to single row',
   )
   await cleanUp()
 })

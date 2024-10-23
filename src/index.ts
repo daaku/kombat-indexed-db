@@ -174,7 +174,7 @@ export class LocalIndexedDB implements Local {
   public async queryMessages(since: string): Promise<Message[]> {
     const t = this.#db.transaction(this.#messageLogStoreName)
     const results: Message[] = []
-    let cursor = await t.store.openCursor(IDBKeyRange.lowerBound(since), 'prev')
+    let cursor = await t.store.openCursor(IDBKeyRange.lowerBound(since))
     while (cursor) {
       results.push(cursor.value)
       cursor = await cursor.continue()

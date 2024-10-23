@@ -23,11 +23,7 @@
     "prepare": "npm run build",
     "dev": "vite"
   },
-  "keywords": [
-    "kombat",
-    "crdt",
-    "indexeddb"
-  ],
+  "keywords": ["kombat", "crdt", "indexeddb"],
   "devDependencies": {
     "@daaku/qunit-puppeteer": "^4.0.0",
     "@types/qunit": "^2.11.3",
@@ -37,7 +33,7 @@
     "vite": "^5.0.2"
   },
   "dependencies": {
-    "@daaku/kombat": "^2.0.0",
+    "@daaku/kombat": "^2.14.0",
     "idb": "^8.0.0"
   }
 }
