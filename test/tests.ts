@@ -1,11 +1,11 @@
-import QUnit from 'qunit';
-import 'qunit/qunit/qunit.css';
-import { Message, Timestamp } from '@daaku/kombat';
-import { deleteDB, IDBPDatabase, openDB } from 'idb';
-import { customAlphabet } from 'nanoid';
+import QUnit from 'qunit'
+import 'qunit/qunit/qunit.css'
+import { Message, Timestamp } from '@daaku/kombat'
+import { deleteDB, IDBPDatabase, openDB } from 'idb'
+import { customAlphabet } from 'nanoid'
 
 // @ts-ignore
-window.HARNESS_RUN_END && QUnit.on('runEnd', window.HARNESS_RUN_END);
+window.HARNESS_RUN_END && QUnit.on('runEnd', window.HARNESS_RUN_END)
 
 import {
   Changes,
@@ -13,12 +13,12 @@ import {
   LocalIndexedDB,
   syncDatasetIndexedDB,
   syncDatasetMem,
-} from '../src/index.js';
+} from '../src/index.js'
 
-const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10);
-const nodeID = 'e35dd11177e4cc2c';
-const falconID = '456';
-const yodaID = '123';
+const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10)
+const nodeID = 'e35dd11177e4cc2c'
+const falconID = '456'
+const yodaID = '123'
 
 const falconNameMessage: Message = {
   timestamp: new Timestamp(1599729600000, 0, nodeID).toJSON(),
@@ -26,7 +26,7 @@ const falconNameMessage: Message = {
   row: falconID,
   column: 'name',
   value: 'Falcon',
-} as const;
+} as const
 
 const yodaNameMessage: Message = {
   timestamp: new Timestamp(1599729700000, 0, nodeID).toJSON(),
@@ -34,7 +34,7 @@ const yodaNameMessage: Message = {
   row: yodaID,
   column: 'name',
   value: 'Yoda',
-} as const;
+} as const
 
 const yodaAge900Message: Message = {
   timestamp: new Timestamp(1599729800000, 0, nodeID).toJSON(),
@@ -42,7 +42,7 @@ const yodaAge900Message: Message = {
   row: yodaID,
   column: 'age',
   value: 900,
-} as const;
+} as const
 
 const yodaAge950Message: Message = {
   timestamp: new Timestamp(1599729900000, 0, nodeID).toJSON(),
@@ -50,96 +50,96 @@ const yodaAge950Message: Message = {
   row: yodaID,
   column: 'age',
   value: 950,
-} as const;
+} as const
 
 function makeName(prefix: string): string {
-  return `${prefix}_${nanoid()}`;
+  return `${prefix}_${nanoid()}`
 }
 
 interface Created {
-  l: LocalIndexedDB;
-  db: IDBPDatabase;
-  cleanUp(): void;
+  l: LocalIndexedDB
+  db: IDBPDatabase
+  cleanUp(): void
 }
 
 async function createDB(
   prefix: string,
   upgradeDB?: (db: IDBPDatabase) => void,
 ): Promise<Created> {
-  const name = makeName(prefix);
-  const l = new LocalIndexedDB();
+  const name = makeName(prefix)
+  const l = new LocalIndexedDB()
   const db = await openDB(name, 1, {
-    upgrade: (db) => {
-      l.upgradeDB(db);
+    upgrade: db => {
+      l.upgradeDB(db)
       if (upgradeDB) {
-        upgradeDB(db);
+        upgradeDB(db)
       }
     },
-  });
-  l.setDB(db);
+  })
+  l.setDB(db)
 
   const cleanUp = async () => {
-    db.close();
-    await deleteDB(name);
-  };
+    db.close()
+    await deleteDB(name)
+  }
 
-  return { l, db, cleanUp };
+  return { l, db, cleanUp }
 }
 
-QUnit.test('Set/Get ', async (assert) => {
-  const { l, cleanUp } = await createDB('store_query_last_sync');
-  const key = 'last_sync';
-  assert.notOk(await l.get(key), 'should start off undefined');
-  const ts = 'foo-bar-baz';
-  await l.set(key, ts);
-  assert.equal(await l.get(key), ts, 'should now have expected value');
-  await cleanUp();
-});
+QUnit.test('Set/Get ', async assert => {
+  const { l, cleanUp } = await createDB('store_query_last_sync')
+  const key = 'last_sync'
+  assert.notOk(await l.get(key), 'should start off undefined')
+  const ts = 'foo-bar-baz'
+  await l.set(key, ts)
+  assert.equal(await l.get(key), ts, 'should now have expected value')
+  await cleanUp()
+})
 
-QUnit.test('Store/Query Messages', async (assert) => {
-  const { l, cleanUp } = await createDB('store_query_messages');
-  const results1 = await l.storeMessages([yodaNameMessage, yodaAge900Message]);
-  assert.deepEqual(results1, [true, true], 'both messages should be inserted');
-  const results2 = await l.storeMessages([yodaNameMessage, yodaAge900Message]);
-  assert.deepEqual(results2, [false, false], 'no messages should be inserted');
-  const results3 = await l.queryMessages('');
+QUnit.test('Store/Query Messages', async assert => {
+  const { l, cleanUp } = await createDB('store_query_messages')
+  const results1 = await l.storeMessages([yodaNameMessage, yodaAge900Message])
+  assert.deepEqual(results1, [true, true], 'both messages should be inserted')
+  const results2 = await l.storeMessages([yodaNameMessage, yodaAge900Message])
+  assert.deepEqual(results2, [false, false], 'no messages should be inserted')
+  const results3 = await l.queryMessages('')
   assert.deepEqual(
     results3,
     [yodaAge900Message, yodaNameMessage],
     'expect both messages to be returned',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
 
-QUnit.test('Store/Query Latest', async (assert) => {
-  const { l, cleanUp } = await createDB('store_query_latest');
-  const originalIn = [yodaNameMessage, yodaAge900Message];
-  await l.storeMessages(originalIn);
+QUnit.test('Store/Query Latest', async assert => {
+  const { l, cleanUp } = await createDB('store_query_latest')
+  const originalIn = [yodaNameMessage, yodaAge900Message]
+  await l.storeMessages(originalIn)
   assert.deepEqual(
     await l.queryLatestMessages(originalIn),
     originalIn,
     'expect the original set as the latest',
-  );
-  await l.storeMessages([yodaAge950Message]);
+  )
+  await l.storeMessages([yodaAge950Message])
   assert.deepEqual(
     await l.queryLatestMessages(originalIn),
     [yodaNameMessage, yodaAge950Message],
     'now expect the yoda 950 age message',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
 
-QUnit.test('Sync Dataset IndexedDB', async (assert) => {
-  const datasetPrefix = `${nanoid()}_`;
+QUnit.test('Sync Dataset IndexedDB', async assert => {
+  const datasetPrefix = `${nanoid()}_`
   const upgradeDB = (db: IDBPDatabase) => {
-    db.createObjectStore(`${datasetPrefix}people`, { keyPath: 'id' });
-    db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' });
-  };
+    db.createObjectStore(`${datasetPrefix}people`, { keyPath: 'id' })
+    db.createObjectStore(`${datasetPrefix}spaceship`, { keyPath: 'id' })
+  }
 
-  const { l, db, cleanUp } = await createDB('sync_dataset', upgradeDB);
-  l.listenChanges(syncDatasetIndexedDB(db, datasetPrefix));
+  const { l, db, cleanUp } = await createDB('sync_dataset', upgradeDB)
+  l.listenChanges(syncDatasetIndexedDB(db, datasetPrefix))
 
-  await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge950Message]);
+  await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge950Message])
   assert.deepEqual(
     await db.get(`${datasetPrefix}spaceship`, falconID),
     {
@@ -147,7 +147,7 @@ QUnit.test('Sync Dataset IndexedDB', async (assert) => {
       name: 'Falcon',
     },
     'expect falcon',
-  );
+  )
   assert.deepEqual(
     await db.get(`${datasetPrefix}people`, yodaID),
     {
@@ -156,16 +156,16 @@ QUnit.test('Sync Dataset IndexedDB', async (assert) => {
       age: 950,
     },
     'expect yoda',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
 
-QUnit.test('Sync Dataset Mem', async (assert) => {
-  const { l, cleanUp } = await createDB('sync_mem');
-  const mem = {};
-  l.listenChanges(syncDatasetMem(mem));
+QUnit.test('Sync Dataset Mem', async assert => {
+  const { l, cleanUp } = await createDB('sync_mem')
+  const mem = {}
+  l.listenChanges(syncDatasetMem(mem))
 
-  await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge900Message]);
+  await l.applyChanges([falconNameMessage, yodaNameMessage, yodaAge900Message])
   assert.deepEqual(
     mem,
     {
@@ -184,8 +184,8 @@ QUnit.test('Sync Dataset Mem', async (assert) => {
       },
     },
     'expect mem db',
-  );
-  await l.applyChanges([yodaAge950Message]);
+  )
+  await l.applyChanges([yodaAge950Message])
   assert.deepEqual(
     mem,
     {
@@ -204,20 +204,16 @@ QUnit.test('Sync Dataset Mem', async (assert) => {
       },
     },
     'expect mem db',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
 
-QUnit.test('Load Dataset Mem', async (assert) => {
-  const { l, db, cleanUp } = await createDB('load_mem');
-  await l.storeMessages([
-    falconNameMessage,
-    yodaNameMessage,
-    yodaAge900Message,
-  ]);
+QUnit.test('Load Dataset Mem', async assert => {
+  const { l, db, cleanUp } = await createDB('load_mem')
+  await l.storeMessages([falconNameMessage, yodaNameMessage, yodaAge900Message])
 
-  const mem = {};
-  await loadDatasetMem(mem, db);
+  const mem = {}
+  await loadDatasetMem(mem, db)
 
   assert.deepEqual(
     mem,
@@ -237,20 +233,20 @@ QUnit.test('Load Dataset Mem', async (assert) => {
       },
     },
     'expect mem db',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
 
-QUnit.test('Changes', async (assert) => {
-  const { l, cleanUp } = await createDB('store_query_latest');
-  const changes: Changes[] = [];
-  const unsubscribe = l.listenChanges(async (c) => {
-    changes.push(c);
-  });
-  await l.applyChanges([falconNameMessage, yodaAge900Message]);
-  await l.applyChanges([yodaAge950Message]);
-  unsubscribe();
-  await l.applyChanges([yodaNameMessage]);
+QUnit.test('Changes', async assert => {
+  const { l, cleanUp } = await createDB('store_query_latest')
+  const changes: Changes[] = []
+  const unsubscribe = l.listenChanges(async c => {
+    changes.push(c)
+  })
+  await l.applyChanges([falconNameMessage, yodaAge900Message])
+  await l.applyChanges([yodaAge950Message])
+  unsubscribe()
+  await l.applyChanges([yodaNameMessage])
   assert.deepEqual(
     changes,
     [
@@ -275,6 +271,6 @@ QUnit.test('Changes', async (assert) => {
       },
     ],
     'expect some changes',
-  );
-  await cleanUp();
-});
+  )
+  await cleanUp()
+})
