@@ -1,7 +1,7 @@
 {
   "name": "@daaku/kombat-indexed-db",
   "author": "Naitik Shah <n@daaku.org>",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Kombat storage implemented using IndexedDB.",
   "repository": "git@github.com:daaku/kombat-indexed-db",
   "license": "MIT",
@@ -23,7 +23,11 @@
     "prepare": "npm run build",
     "dev": "vite"
   },
-  "keywords": ["kombat", "crdt", "indexeddb"],
+  "keywords": [
+    "kombat",
+    "crdt",
+    "indexeddb"
+  ],
   "devDependencies": {
     "@daaku/qunit-puppeteer": "^4.0.0",
     "@types/qunit": "^2.11.3",
