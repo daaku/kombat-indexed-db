@@ -10,17 +10,22 @@
     ".": {
       "import": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
+    },
+    "./store": {
+      "import": "./dist/src/store.js",
+      "types": "./dist/src/store.d.ts"
     }
   },
   "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
     "singleQuote": true,
     "trailingComma": "all"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "vite build && URI=file://$PWD/dist/test/index.html qunit-puppeteer",
+    "test": "vite build && TIMEOUT=30000 qunit-puppeteer",
     "deploy": "npm run test && npm publish --access=public",
-    "prepare": "npm run build",
+    "prepare": "tsc",
     "dev": "vite"
   },
   "keywords": [
@@ -38,6 +43,7 @@
   },
   "dependencies": {
     "@daaku/kombat": "^2.14.0",
+    "dequal": "^2.0.3",
     "idb": "^8.0.0"
   }
 }

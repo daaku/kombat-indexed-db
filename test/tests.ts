@@ -4,9 +4,6 @@ import { Message, Timestamp } from '@daaku/kombat'
 import { deleteDB, IDBPDatabase, openDB } from 'idb'
 import { customAlphabet } from 'nanoid'
 
-// @ts-ignore
-window.HARNESS_RUN_END && QUnit.on('runEnd', window.HARNESS_RUN_END)
-
 import {
   Changes,
   loadDatasetMem,
@@ -14,6 +11,11 @@ import {
   syncDatasetIndexedDB,
   syncDatasetMem,
 } from '../src/index.js'
+
+import './store.js'
+
+// @ts-ignore
+window.HARNESS_RUN_END && QUnit.on('runEnd', window.HARNESS_RUN_END)
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 10)
 const nodeID = 'e35dd11177e4cc2c'
