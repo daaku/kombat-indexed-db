@@ -9,7 +9,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: current
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Dependencies
         run: npm install
       - name: Test
